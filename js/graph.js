@@ -655,9 +655,10 @@ d3.csv("https://raw.githubusercontent.com/Chaudeptrai123456/DataViz/master/BTC-U
     drawCandleSimple("simpleCandleChart1", data, '')
         //drawBarChart(data.date, data.close, data.open, 'close', 'open', 'simple_BarChar_Open_Close')
         //drawBarChart(data.date, data.high, data.low, 'high', 'low', 'simple_Bar_Char_High_Low')
-        //drawtwoline('linetwocolumn1', data.date, data.close, data.open, "Close", "Open", "CLose - Open")
-        //drawtwoline('linetwocolumn2', data.date, data.high, data.low, "High", "Low", "High - Low")
+
     drawtwoline('linetwocolumn2', data, '')
+    drawtwoline1('linetwocolumn4', data.date, data.close, data.open, "Close", "Open", "CLose - Open")
+    drawtwoline1('linetwocolumn5', data.date, data.high, data.low, "High", "Low", "High - Low")
     getAllData(data)
         // addFeater("feater",data)
 })
