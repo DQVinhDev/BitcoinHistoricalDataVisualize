@@ -74,7 +74,19 @@ let drawCandleSimple = (idDiv, data, title) => {
                 font: {
                     size: 8
                 },
-
+                buttons: [{
+                    count: 1,
+                    label: '1m',
+                    step: 'month',
+                    stepmode: 'backward'
+                }, {
+                    count: 6,
+                    label: '6m',
+                    step: 'month',
+                    stepmode: 'backward'
+                }, {
+                    step: 'all'
+                }]
             }
         },
 
@@ -200,12 +212,12 @@ let drawCandleSimple = (idDiv, data, title) => {
     var volumeTrace = {
         x: data.date,
         y: data.volume,
-        type: 'bar',
+        type: 'line',
         name: 'Volume',
         yaxis: 'y2',
         marker: {
 
-            color: '#3366CC' // Specify the desired color here
+            color: '#5276EE' // Specify the desired color here
         }
     };
 
@@ -507,7 +519,7 @@ let drawtwoline = (idDiv, data, title) => {
         type: "scatter",
         mode: "lines",
         line: {
-            color: "#9FD7F9"
+            color: "red"
         }, // Customize line color
     };
 
@@ -529,8 +541,21 @@ let drawtwoline = (idDiv, data, title) => {
                 font: {
                     size: 8
                 },
-
+                buttons: [{
+                    count: 1,
+                    label: '1m',
+                    step: 'month',
+                    stepmode: 'backward'
+                }, {
+                    count: 6,
+                    label: '6m',
+                    step: 'month',
+                    stepmode: 'backward'
+                }, {
+                    step: 'all'
+                }]
             }
+
         },
         yaxis: {
             title: "USD Price"
