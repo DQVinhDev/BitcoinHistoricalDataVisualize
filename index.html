@@ -23,30 +23,6 @@
     <!-- Tweaks for older IEs-->
     <link rel="stylesheet" href="https://netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css">
 
-<script>document.addEventListener("DOMContentLoaded", function() {
-    fetch('/api/bitcoin-history')
-    .then(response => response.json())
-    .then(data => {
-        var chartData = data.map(item => {
-            return { x: new Date(item.time), y: item.price };
-        });
-
-        var chart = new CanvasJS.StockChart("simpleCandleChart1", {
-            title: {
-                text: "Bitcoin Historical Data"
-            },
-            charts: [{
-                data: [{
-                    type: "candlestick",
-                    dataPoints: chartData
-                }]
-            }]
-        });
-        chart.render();
-    })
-    .catch(error => console.error('Error fetching Bitcoin data:', error));
-});</script>
-
 
 </head>
 

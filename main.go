@@ -1,96 +1,86 @@
 package main
 
 import (
+	"encoding/csv"
 	"encoding/json"
 	"fmt"
+	"io"
 	"log"
 	"net/http"
-	"time"
+	"strconv"
 )
 
-type BitcoinData struct {
-    Time  time.Time `json:"time"`
-    Price float64   `json:"price"`
+// Define a struct to hold your data
+type RowData struct {
+    Date     string  `json:"date"`
+    Open     float64 `json:"open"`
+    High     float64 `json:"high"`
+    Low      float64 `json:"low"`
+    Close    float64 `json:"close"`
+    AdjClose float64 `json:"adjClose"`
+    Volume   float64 `json:"volume"`
 }
 
-func fetchBitcoinData() ([]BitcoinData, error) {
-    apiUrl := "https://api.coingecko.com/api/v3/coins/bitcoin/market_chart?vs_currency=usd&days=365"
-    resp, err := http.Get(apiUrl)
+// Function to fetch and parse CSV data
+func fetchCSVData(url string) ([]RowData, error) {
+    resp, err := http.Get(url)
     if err != nil {
         return nil, err
     }
     defer resp.Body.Close()
 
-    var result struct {
-        Prices [][]float64 `json:"prices"`
-    }
-    if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+    reader := csv.NewReader(resp.Body)
+    var data []RowData
+
+    // Skip the header row
+    if _, err := reader.Read(); err != nil {
         return nil, err
     }
 
-    var data []BitcoinData
-    for _, item := range result.Prices {
-        data = append(data, BitcoinData{
-            Time:  time.Unix(int64(item[0]/1000), 0),
-            Price: item[1],
+    // Read each record
+    for {
+        record, err := reader.Read()
+        if err == io.EOF {
+            break
+        }
+        if err != nil {
+            return nil, err
+        }
+
+        open, _ := strconv.ParseFloat(record[1], 64)
+        high, _ := strconv.ParseFloat(record[2], 64)
+        low, _ := strconv.ParseFloat(record[3], 64)
+        close, _ := strconv.ParseFloat(record[4], 64)
+        adjClose, _ := strconv.ParseFloat(record[5], 64)
+        volume, _ := strconv.ParseFloat(record[6], 64)
+
+        data = append(data, RowData{
+            Date:     record[0],
+            Open:     open,
+            High:     high,
+            Low:      low,
+            Close:    close,
+            AdjClose: adjClose,
+            Volume:   volume,
         })
     }
-
     return data, nil
 }
 
-func handler(w http.ResponseWriter, r *http.Request) {
-    data, err := fetchBitcoinData()
+func bitcoinDataHandler(w http.ResponseWriter, r *http.Request) {
+    // Use the URL of your CSV data
+    w.Header().Set("Access-Control-Allow-Origin", "*") // Cho phép tất cả các domain
+    data, err := fetchCSVData("https://raw.githubusercontent.com/Chaudeptrai123456/DataViz/master/BTC-USD.csv")
     if err != nil {
         http.Error(w, "Failed to fetch data", http.StatusInternalServerError)
         return
     }
-
-    jsonData, _ := json.Marshal(data)
-
-    htmlContent := `
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Bitcoin Historical Data</title>
-        <script type="text/javascript" src="https://cdn.canvasjs.com/canvasjs.stock.min.js"></script>
-    </head>
-    <body>
-        <h1>Bitcoin Historical Data Visualization</h1>
-        <div id="chartContainer" style="height: 370px; width: 100%;"></div>
-        <script>
-            var dataPoints = ` + string(jsonData) + `;
-
-            var chartData = dataPoints.map(function(item) {
-                return { x: new Date(item.time), y: item.price };
-            });
-
-            var chart = new CanvasJS.StockChart("chartContainer", {
-                title: {
-                    text: "Bitcoin Price History"
-                },
-                charts: [{
-                    data: [{
-                        type: "line",
-                        dataPoints: chartData
-                    }]
-                }],
-                rangeSelector: {
-                    enabled: true
-                }
-            });
-            chart.render();
-        </script>
-    </body>
-    </html>`
-
-    fmt.Fprint(w, htmlContent)
+    w.Header().Set("Content-Type", "application/json")
+    json.NewEncoder(w).Encode(data)
 }
 
 func main() {
-    http.HandleFunc("/", handler)
+    http.HandleFunc("/api/bitcoin-history", bitcoinDataHandler)
     fmt.Println("Server started at http://localhost:8080")
     log.Fatal(http.ListenAndServe(":8080", nil))
 }
